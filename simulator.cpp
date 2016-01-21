@@ -2,6 +2,7 @@
 #include <iostream>
 #include <queue>
 #include <random>
+#include <algorithm>
 
 using namespace std;
 
@@ -17,15 +18,21 @@ using namespace std;
  * PLOSS = The packet loss probability (for M/M/1/K queue)
  */
 
-int LAMDA = 0; 		
-int L = 12000; 		
-int ALPHA = 5; 		
-int C = 1000000; 	
-int RHO = 0; 		
-int E_N = 0; 		
-int E_T = 0; 		 
-int P_IDLE = 0; 	
-int P_LOSS = 0; 	
+const int LAMDA = 3;
+const int L = 12000;
+const int ALPHA = 8;
+const int C = 1000000;
+const int RHO = 0;
+const int E_N = 0;
+const int E_T = 0;
+const int P_IDLE = 0;
+const int P_LOSS = 0;
+
+struct Packet {
+	double arrivalTime;
+	double departureTime;
+	int length;
+};
 
 double randomNum() {
 	return ((double) rand() / (RAND_MAX));
@@ -36,22 +43,54 @@ void simulator(const int T, const int K) {
 	printf("Queue Simulator\n");
 	printf("---------------\n");
 	printf("Running with paramters:\n");
-	printf("    T: %d\n", T);
-	printf("\n");
+	printf("    T: %d\n\n", T);
 
 	std::queue<double> *observers = new std::queue<double>();
+	std::queue<Packet *> *packets = new std::queue<Packet *>();
+
 	std::random_device rd;
     std::mt19937 gen(rd());
-    std::exponential_distribution<> exponentialDistribution(ALPHA);
+    std::exponential_distribution<> observerExponentialDistribution(ALPHA);
 
     /**
      * Generate a set of random observation times
-     * according to a distribution with parameter
-     * α (ALPHA)
+     * according to a poisson distribution with parameter
+     * α (ALPHA).
      */
-	for (double t = 0.0; t < ((double) T); t += exponentialDistribution(gen)) {
-		observers->push(i);
+	for (double t = 0.0; t < ((double) T); t += observerExponentialDistribution(gen)) {
+		observers->push(t);
 	}
 
+	/**
+     * Generate a set of random packet arrivals
+     * according to a poisson distribution with parameter
+     * λ (LAMDA). Packet length is generated according to
+     * an exponential distribution with parameter 1/L.
+     * Departure time depends on how much system needs to
+     * wait and its service time [L/C] (C is the link rate).
+     */
+    std::exponential_distribution<> packetArrivalExponentialDistribution(LAMDA);
+    std::exponential_distribution<> packetLengthExponentialDistrubution(1.0 / ((double) L));
 
+	for (double t = 0.0; t < ((double) T); t += packetArrivalExponentialDistribution(gen)) {
+		Packet *newPacket = new Packet;
+
+		int length = std::round(packetLengthExponentialDistrubution(gen));
+		double departureTime = 0.0;
+		double serviceTime = (((double) length) / ((double) C));
+
+		// If there are already packets in the queue service
+		// time starts after the last packet has been serviced
+		if (packets->size()) {
+			departureTime = std::max(t, packets->back()->departureTime) + serviceTime;
+		} else {
+			departureTime = t + serviceTime;
+		}
+
+		newPacket->arrivalTime = t;
+		newPacket->departureTime = departureTime;
+		newPacket->length = length;
+
+		packets->push(newPacket);
+	}
 }
