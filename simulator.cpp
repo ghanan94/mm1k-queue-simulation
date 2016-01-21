@@ -141,7 +141,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 				departingPackets->push(packets->front());
 
-				showEachTimeStamp && printf("Added Departure: %f\n", packets->front()->departureTime);
+				showEachTimeStamp && printf("-----Added Departure @ %f\n", packets->front()->departureTime);
 			} else {
 				showEachTimeStamp && printf("-----Dropped packet\n");
 			}
