@@ -47,6 +47,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 	std::queue<Observer *> *observers = new std::queue<Observer *>();
 	std::queue<Packet *> *packets = new std::queue<Packet *>();
+	std::queue<Packet *> *departingPackets = new std::queue<Packet *>();
 
 	std::random_device rd;
     std::mt19937 gen(rd());
@@ -97,15 +98,12 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	int N_A = 0;
 	int N_D = 0;
 	int N_O = 0;
+
 	int queued = 0;
-
-	std::queue<Packet *> *departingPackets = new std::queue<Packet *>();
-
-	double simulatedTime = std::min(observers->front()->observeTime, packets->front()->arrivalTime);
-	showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
-
 	int idleObservations = 0;
 	int queuedObservations = 0;
+
+	double simulatedTime = std::min(observers->front()->observeTime, packets->front()->arrivalTime);
 
 	while (true) {
 		// Observer Event
