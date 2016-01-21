@@ -51,8 +51,8 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	printf("  %-9s %d\n", "ALPHA:", ALPHA);
 	printf("  %-9s %d\n\n", "C:", C);
 
-	std::vector<Observer *> *observers = new std::vector<Observer *>();
-	std::vector<Packet *> *packets = new std::vector<Packet *>();
+	std::queue<Observer *> *observers = new std::queue<Observer *>();
+	std::queue<Packet *> *packets = new std::queue<Packet *>();
 
 	std::random_device rd;
     std::mt19937 gen(rd());
@@ -68,7 +68,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 		newObserver->observeTime = t;
 
-		observers->push_back(newObserver);
+		observers->push(newObserver);
 	}
 
 	/**
@@ -92,7 +92,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 		newPacket->serviceTime = serviceTime;
 		newPacket->length = length;
 
-		packets->push_back(newPacket);
+		packets->push(newPacket);
 	}
 
 	/**
@@ -108,9 +108,9 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	int dropped = 0;
 	int queued = 0;
 
-	std::vector<Packet *> *departingPackets = new std::vector<Packet *>();
+	std::queue<Packet *> *departingPackets = new std::queue<Packet *>();
 
-	double simulatedTime = std::min(observers->at(N_O)->observeTime, packets->at(N_A)->arrivalTime);
+	double simulatedTime = std::min(observers->front()->observeTime, packets->front()->arrivalTime);
 	showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
 
 	int idleObservations = 0;
@@ -118,21 +118,22 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 	while (true) {
 		// Observer Event
-		if ((observers->size() > N_O) && (observers->at(N_O)->observeTime == simulatedTime)) {
-			showEachTimeStamp && printf("Observer Event @ %f\n", observers->at(N_O)->observeTime);
+		if (observers->size() && (observers->front()->observeTime == simulatedTime)) {
+			showEachTimeStamp && printf("Observer Event @ %f\n", observers->front()->observeTime);
 
-			if (departingPackets->size() == N_D) {
+			if (departingPackets->empty()) {
 				++idleObservations;
 			}
 
 			queuedObservations += queued;
 
 			++N_O;
+			observers->pop();
 		}
 
 		// Packet Arrival Event
-		if ((packets->size() > N_A) && (packets->at(N_A)->arrivalTime == simulatedTime)) {
-			showEachTimeStamp && printf("Arrival Event @ %f\n", packets->at(N_A)->arrivalTime);
+		if (packets->size() && (packets->front()->arrivalTime == simulatedTime)) {
+			showEachTimeStamp && printf("Arrival Event @ %f\n", packets->front()->arrivalTime);
 
 			if ((K == 0) || (queued < K)) {
 				++queued;
@@ -141,49 +142,51 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 				 * Add a departure event.
 				 * Departure time depends on whether any other packets are in the queue.
 				 */
-				if (departingPackets->size() > N_D) {
-					packets->at(N_A)->departureTime = departingPackets->back()->departureTime + packets->at(N_A)->serviceTime;
+				if (departingPackets->empty()) {
+					packets->front()->departureTime = packets->front()->arrivalTime + packets->front()->serviceTime;
 				} else {
-					packets->at(N_A)->departureTime = packets->at(N_A)->arrivalTime + packets->at(N_A)->serviceTime;
+					packets->front()->departureTime = departingPackets->back()->departureTime + packets->front()->serviceTime;
 				}
 
-				departingPackets->push_back(packets->at(N_A));
+				departingPackets->push(packets->front());
 
-				showEachTimeStamp && printf("Added Departure: %f\n", packets->at(N_D)->departureTime);
+				showEachTimeStamp && printf("Added Departure: %f\n", packets->front()->departureTime);
 			} else {
 				++dropped;
-				packets->at(N_A)->dropped = true;
+				packets->front()->dropped = true;
 
 				showEachTimeStamp && printf("-----Dropped packet\n");
 			}
 
 			++N_A;
+			packets->pop();
 		}
 
 		// Packet Departure Event
-		if ((departingPackets->size() > N_D) && (departingPackets->at(N_D)->departureTime == simulatedTime)) {
-			showEachTimeStamp && printf("Departure Event @ %f\n", departingPackets->at(N_D)->departureTime);
+		if (departingPackets->size() && (departingPackets->front()->departureTime == simulatedTime)) {
+			showEachTimeStamp && printf("Departure Event @ %f\n", departingPackets->front()->departureTime);
 
 			--queued;
 			++N_D;
+			departingPackets->pop();
 		}
 
 		double nextObserverTime = DOUBLE_MAX;
 		double nextArrivalTime = DOUBLE_MAX;
 		double nextDepartureTime = DOUBLE_MAX;
 
-		if (observers->size() > N_O) {
-			nextObserverTime = observers->at(N_O)->observeTime;
+		if (observers->size()) {
+			nextObserverTime = observers->front()->observeTime;
 			showEachTimeStamp && printf("Next Observer Time: %f\n", nextObserverTime);
 		}
 
-		if (packets->size() > N_A) {
-			nextArrivalTime = packets->at(N_A)->arrivalTime;
+		if (packets->size()) {
+			nextArrivalTime = packets->front()->arrivalTime;
 			showEachTimeStamp && printf("Next Arrival Time: %f\n", nextArrivalTime);
 		}
 
-		if (departingPackets->size() > N_D) {
-			nextDepartureTime = departingPackets->at(N_D)->departureTime;
+		if (departingPackets->size()) {
+			nextDepartureTime = departingPackets->front()->departureTime;
 			showEachTimeStamp && printf("Next Depart Time: %f\n", nextDepartureTime);
 		}
 
