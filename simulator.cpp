@@ -34,6 +34,10 @@ struct Packet {
 	int length;
 };
 
+struct Observer {
+	double observeTime;
+};
+
 double randomNum() {
 	return ((double) rand() / (RAND_MAX));
 }
@@ -45,8 +49,8 @@ void simulator(const int T, const int K) {
 	printf("Running with paramters:\n");
 	printf("    T: %d\n\n", T);
 
-	std::queue<double> *observers = new std::queue<double>();
-	std::queue<Packet *> *packets = new std::queue<Packet *>();
+	std::vector<Observer *> *observers = new std::vector<Observer *>();
+	std::vector<Packet *> *packets = new std::vector<Packet *>();
 
 	std::random_device rd;
     std::mt19937 gen(rd());
@@ -58,7 +62,11 @@ void simulator(const int T, const int K) {
      * α (ALPHA).
      */
 	for (double t = 0.0; t < ((double) T); t += observerExponentialDistribution(gen)) {
-		observers->push(t);
+		Observer *newObserver = new Observer;
+
+		newObserver->observeTime = t;
+
+		observers->push_back(newObserver);
 	}
 
 	/**
@@ -91,6 +99,16 @@ void simulator(const int T, const int K) {
 		newPacket->departureTime = departureTime;
 		newPacket->length = length;
 
-		packets->push(newPacket);
+		packets->push_back(newPacket);
 	}
+
+	/**
+	 * N_A = Number of packet arrivals so far
+	 * N_D = Number of packet departures so far
+	 * N_O = Number of observations so far
+	 */
+
+	int N_A = 0;
+	int N_D = 0;
+	int N_O = 0;
 }
