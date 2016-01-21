@@ -1,5 +1,6 @@
 #include <iostream>
 #include "simulator.h"
+
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -13,15 +14,11 @@ int main(int argc, char *argv[]) {
 
 	const int T = std::stoi(argv[1]);
 	const int K = std::stoi(argv[2]);
-	const int LAMDA = 3;
+	const int LAMDA = 50;
 	const int L = 12000;
-	const int ALPHA = 8;
+	const int ALPHA = 50;
 	const int C = 1000000;
 	const int RHO = 0;
-	const int E_N = 0;
-	const int E_T = 0;
-	const int P_IDLE = 0;
-	const int P_LOSS = 0;
 
 	simulator(false, T, K, LAMDA, L, ALPHA, C);
 

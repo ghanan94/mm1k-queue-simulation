@@ -8,15 +8,17 @@
 using namespace std;
 
 /**
- * λ = Average number of packets generated /arrived per second
- * L = Average length of a packet in bits
- * α = Average number of observer events per second
- * C = The transmission rate of the output link in bits per second
- * ρ = Utilization of the queue (= L λ/C)
- * E[N] = Average number of packets in the buffer/queue
- * E[T] = Average sojourn time (queuing delay + service time)
- * PIDLE = The proportion of time the server is idle
- * PLOSS = The packet loss probability (for M/M/1/K queue)
+ * T  				= Time to run simulation
+ * K				= Size of queue (0 = infinite)
+ * λ (LAMDA) 		= Average number of packets generated /arrived per second
+ * L 				= Average length of a packet in bits
+ * α (ALPHA) 		= Average number of observer events per second
+ * C 				= The transmission rate of the output link in bits per second
+ * ρ (RHO) 			= Utilization of the queue (= L λ/C)
+ * E[N] (E_N) 		= Average number of packets in the buffer/queue
+ * E[T] (E_T) 		= Average sojourn time (queuing delay + service time)
+ * PIDLE (P_IDLE) 	= The proportion of time the server is idle
+ * PLOSS (P_LOSS) 	= The packet loss probability (for M/M/1/K queue)
  */
 
 const double DOUBLE_MAX = std::numeric_limits<double>::max();
@@ -36,10 +38,6 @@ struct Packet {
 struct Observer {
 	double observeTime;
 };
-
-double randomNum() {
-	return ((double) rand() / (RAND_MAX));
-}
 
 void simulator(const bool showEachTimeStamp, const int T, const int K, const int LAMDA, const int L, const int ALPHA, const int C) {
 	srand(time(NULL));
@@ -65,7 +63,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
      * according to a poisson distribution with parameter
      * α (ALPHA).
      */
-	for (double t = 0.0; t < ((double) T); t += observerExponentialDistribution(gen)) {
+	for (double t = observerExponentialDistribution(gen); t < ((double) T); t += observerExponentialDistribution(gen)) {
 		Observer *newObserver = new Observer;
 
 		newObserver->observeTime = t;
@@ -84,7 +82,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
     std::exponential_distribution<> packetArrivalExponentialDistribution(LAMDA);
     std::exponential_distribution<> packetLengthExponentialDistrubution(1.0 / ((double) L));
 
-	for (double t = 0.0; t < ((double) T); t += packetArrivalExponentialDistribution(gen)) {
+	for (double t = packetArrivalExponentialDistribution(gen); t < ((double) T); t += packetArrivalExponentialDistribution(gen)) {
 		Packet *newPacket = new Packet;
 
 		int length = std::round(packetLengthExponentialDistrubution(gen));
@@ -98,11 +96,11 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	}
 
 	/**
-	 * N_A = Number of packet arrivals so far
-	 * N_D = Number of packet departures so far
-	 * N_O = Number of observations so far
-	 * dropped = Number of dropped packets so far
-	 * queued = Number of packets currently in queue
+	 * N_A 		= Number of packet arrivals so far
+	 * N_D 		= Number of packet departures so far
+	 * N_O 		= Number of observations so far
+	 * dropped 	= Number of dropped packets so far
+	 * queued 	= Number of packets currently in queue
 	 */
 	int N_A = 0;
 	int N_D = 0;
@@ -115,13 +113,24 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	double simulatedTime = std::min(observers->at(N_O)->observeTime, packets->at(N_A)->arrivalTime);
 	showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
 
+	int idleObservations = 0;
+	int queuedObservations = 0;
+
 	while (true) {
+		// Observer Event
 		if ((observers->size() > N_O) && (observers->at(N_O)->observeTime == simulatedTime)) {
 			showEachTimeStamp && printf("Observer Event @ %f\n", observers->at(N_O)->observeTime);
+
+			if (departingPackets->size() == N_D) {
+				++idleObservations;
+			}
+
+			queuedObservations += queued;
 
 			++N_O;
 		}
 
+		// Packet Arrival Event
 		if ((packets->size() > N_A) && (packets->at(N_A)->arrivalTime == simulatedTime)) {
 			showEachTimeStamp && printf("Arrival Event @ %f\n", packets->at(N_A)->arrivalTime);
 
@@ -151,6 +160,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 			++N_A;
 		}
 
+		// Packet Departure Event
 		if ((departingPackets->size() > N_D) && (departingPackets->at(N_D)->departureTime == simulatedTime)) {
 			showEachTimeStamp && printf("Departure Event @ %f\n", departingPackets->at(N_D)->departureTime);
 
@@ -193,4 +203,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	printf("%-20s %d\n", "Departed Packets:", N_D);
 	printf("%-20s %d\n", "Dropped Packets:", dropped);
 	printf("%-20s %d\n", "Observers:", N_O);
+
+	printf("%-20s %f\n", "E_N:", ((double) queuedObservations) / ((double) N_O));
+	printf("%-20s %f\n", "P_IDLE:", ((double) idleObservations) / ((double) N_O));
 }
