@@ -195,8 +195,6 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 		} else {
 			showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
 		}
-
-		//cin.get();
 	}
 
 	const double E_N = ((double) queuedObservations) / ((double) N_O);
