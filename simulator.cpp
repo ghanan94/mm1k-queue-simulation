@@ -19,16 +19,6 @@ using namespace std;
  * PLOSS = The packet loss probability (for M/M/1/K queue)
  */
 
-const int LAMDA = 3;
-const int L = 12000;
-const int ALPHA = 8;
-const int C = 1000000;
-const int RHO = 0;
-const int E_N = 0;
-const int E_T = 0;
-const int P_IDLE = 0;
-const int P_LOSS = 0;
-
 const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
 struct Packet {
@@ -50,12 +40,17 @@ double randomNum() {
 	return ((double) rand() / (RAND_MAX));
 }
 
-void simulator(const int T, const int K) {
+void simulator(const bool showEachTimeStamp, const int T, const int K, const int LAMDA, const int L, const int ALPHA, const int C) {
 	srand(time(NULL));
 	printf("Queue Simulator\n");
 	printf("---------------\n");
 	printf("Running with paramters:\n");
-	printf("    T: %d\n\n", T);
+	printf("  %-9s %d\n", "T:", T);
+	printf("  %-9s %d (0 = infinite)\n", "K:", K);
+	printf("  %-9s %d\n", "LAMDA:", LAMDA);
+	printf("  %-9s %d\n", "L:", L);
+	printf("  %-9s %d\n", "ALPHA:", ALPHA);
+	printf("  %-9s %d\n\n", "C:", C);
 
 	std::vector<Observer *> *observers = new std::vector<Observer *>();
 	std::vector<Packet *> *packets = new std::vector<Packet *>();
@@ -126,24 +121,24 @@ void simulator(const int T, const int K) {
 	double simulatedTime = std::min(observers->at(N_O)->observeTime, packets->at(N_A)->arrivalTime);
 
 	std::vector<Packet *> *departingPackets = new std::vector<Packet *>();
-	printf("Next Simulated Event @ %f\n\n", simulatedTime);
+	showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
 
 	while (true) {
 		if ((observers->size() > N_O) && (observers->at(N_O)->observeTime == simulatedTime)) {
-			printf("Observer Event @ %f\n", observers->at(N_O)->observeTime);
+			showEachTimeStamp && printf("Observer Event @ %f\n", observers->at(N_O)->observeTime);
 
 			++N_O;
 		}
 
 		if ((packets->size() > N_A) && (packets->at(N_A)->arrivalTime == simulatedTime)) {
-			printf("Arrival Event @ %f\n", packets->at(N_A)->arrivalTime);
+			showEachTimeStamp && printf("Arrival Event @ %f\n", packets->at(N_A)->arrivalTime);
 
 			if ((K == 0) || (queued < K)) {
 				++queued;
 				departingPackets->push_back(packets->at(N_A));
-				printf("Added Departure: %f\n", departingPackets->at(N_D)->departureTime);
+				showEachTimeStamp && printf("Added Departure: %f\n", departingPackets->at(N_D)->departureTime);
 			} else {
-				printf("-----Dropped packet\n");
+				showEachTimeStamp && printf("-----Dropped packet\n");
 
 				++dropped;
 				packets->at(N_A)->dropped = true;
@@ -153,7 +148,7 @@ void simulator(const int T, const int K) {
 		}
 
 		if ((departingPackets->size() > N_D) && (departingPackets->at(N_D)->departureTime == simulatedTime)) {
-			printf("Departure Event @ %f\n", departingPackets->at(N_D)->departureTime);
+			showEachTimeStamp && printf("Departure Event @ %f\n", departingPackets->at(N_D)->departureTime);
 
 			--queued;
 			++N_D;
@@ -165,17 +160,17 @@ void simulator(const int T, const int K) {
 
 		if (observers->size() > N_O) {
 			nextObserverTime = observers->at(N_O)->observeTime;
-			printf("Next Observer Time: %f\n", nextObserverTime);
+			showEachTimeStamp && printf("Next Observer Time: %f\n", nextObserverTime);
 		}
 
 		if (packets->size() > N_A) {
 			nextArrivalTime = packets->at(N_A)->arrivalTime;
-			printf("Next Arrival Time: %f\n", nextArrivalTime);
+			showEachTimeStamp && printf("Next Arrival Time: %f\n", nextArrivalTime);
 		}
 
 		if (departingPackets->size() > N_D) {
 			nextDepartureTime = departingPackets->at(N_D)->departureTime;
-			printf("Next Depart Time: %f\n", nextDepartureTime);
+			showEachTimeStamp && printf("Next Depart Time: %f\n", nextDepartureTime);
 		}
 
 		simulatedTime = std::min(nextDepartureTime, std::min(nextArrivalTime, nextObserverTime));
@@ -184,7 +179,7 @@ void simulator(const int T, const int K) {
 			// No more events
 			break;
 		} else {
-			printf("Next Simulated Event @ %f\n\n", simulatedTime);
+			showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
 		}
 
 		//cin.get();
