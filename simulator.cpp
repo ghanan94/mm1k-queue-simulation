@@ -199,11 +199,18 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 		//cin.get();
 	}
 
+	const double E_N = ((double) queuedObservations) / ((double) N_O);
+	const double E_T = LAMDA * E_N;
+	const double P_IDLE = ((double) idleObservations) / ((double) N_O);
+	const double P_LOSS = ((double) dropped) / ((double) N_A);
+
 	printf("%-20s %d\n", "Arrived Packets:", N_A);
 	printf("%-20s %d\n", "Departed Packets:", N_D);
 	printf("%-20s %d\n", "Dropped Packets:", dropped);
 	printf("%-20s %d\n", "Observers:", N_O);
 
-	printf("%-20s %f\n", "E_N:", ((double) queuedObservations) / ((double) N_O));
-	printf("%-20s %f\n", "P_IDLE:", ((double) idleObservations) / ((double) N_O));
+	printf("%-20s %f\n", "E_N:", E_N);
+	printf("%-20s %f\n", "E_T:", E_T);
+	printf("%-20s %f\n", "P_IDLE:", P_IDLE);
+	printf("%-20s %f\n", "P_LOSS:", P_LOSS);
 }

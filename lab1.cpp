@@ -14,9 +14,9 @@ int main(int argc, char *argv[]) {
 
 	const int T = std::stoi(argv[1]);
 	const int K = std::stoi(argv[2]);
-	const int LAMDA = 50;
+	const int LAMDA = 5;
 	const int L = 12000;
-	const int ALPHA = 50;
+	const int ALPHA = 5;
 	const int C = 1000000;
 	const int RHO = 0;
 
