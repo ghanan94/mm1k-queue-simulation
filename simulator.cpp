@@ -27,12 +27,6 @@ struct Packet {
 	double arrivalTime;
 	double departureTime;
 	double serviceTime;
-	int length;
-	bool dropped;
-
-	Packet() {
-		dropped = false;
-	}
 };
 
 struct Observer {
@@ -90,7 +84,6 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 		newPacket->arrivalTime = t;
 		newPacket->serviceTime = serviceTime;
-		newPacket->length = length;
 
 		packets->push(newPacket);
 	}
@@ -99,13 +92,11 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	 * N_A 		= Number of packet arrivals so far
 	 * N_D 		= Number of packet departures so far
 	 * N_O 		= Number of observations so far
-	 * dropped 	= Number of dropped packets so far
 	 * queued 	= Number of packets currently in queue
 	 */
 	int N_A = 0;
 	int N_D = 0;
 	int N_O = 0;
-	int dropped = 0;
 	int queued = 0;
 
 	std::queue<Packet *> *departingPackets = new std::queue<Packet *>();
@@ -152,9 +143,6 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 				showEachTimeStamp && printf("Added Departure: %f\n", packets->front()->departureTime);
 			} else {
-				++dropped;
-				packets->front()->dropped = true;
-
 				showEachTimeStamp && printf("-----Dropped packet\n");
 			}
 
@@ -200,6 +188,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 		}
 	}
 
+	const int dropped = N_A - N_D;
 	const double E_N = ((double) queuedObservations) / ((double) N_O);
 	const double E_T = LAMDA * E_N;
 	const double P_IDLE = ((double) idleObservations) / ((double) N_O);
