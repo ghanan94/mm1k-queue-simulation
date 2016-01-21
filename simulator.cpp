@@ -24,6 +24,7 @@ const double DOUBLE_MAX = std::numeric_limits<double>::max();
 struct Packet {
 	double arrivalTime;
 	double departureTime;
+	double serviceTime;
 	int length;
 	bool dropped;
 
@@ -78,7 +79,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
      * λ (LAMDA). Packet length is generated according to
      * an exponential distribution with parameter 1/L.
      * Departure time depends on how much system needs to
-     * wait and its service time [L/C] (C is the link rate).
+     * wait and its service time of [L/C] (C is the link rate).
      */
     std::exponential_distribution<> packetArrivalExponentialDistribution(LAMDA);
     std::exponential_distribution<> packetLengthExponentialDistrubution(1.0 / ((double) L));
@@ -87,19 +88,10 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 		Packet *newPacket = new Packet;
 
 		int length = std::round(packetLengthExponentialDistrubution(gen));
-		double departureTime = 0.0;
 		double serviceTime = (((double) length) / ((double) C));
 
-		// If there are already packets in the queue service
-		// time starts after the last packet has been serviced
-		if (packets->size()) {
-			departureTime = std::max(t, packets->back()->departureTime) + serviceTime;
-		} else {
-			departureTime = t + serviceTime;
-		}
-
 		newPacket->arrivalTime = t;
-		newPacket->departureTime = departureTime;
+		newPacket->serviceTime = serviceTime;
 		newPacket->length = length;
 
 		packets->push_back(newPacket);
@@ -109,18 +101,18 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	 * N_A = Number of packet arrivals so far
 	 * N_D = Number of packet departures so far
 	 * N_O = Number of observations so far
+	 * dropped = Number of dropped packets so far
+	 * queued = Number of packets currently in queue
 	 */
-
 	int N_A = 0;
 	int N_D = 0;
 	int N_O = 0;
-
 	int dropped = 0;
 	int queued = 0;
 
-	double simulatedTime = std::min(observers->at(N_O)->observeTime, packets->at(N_A)->arrivalTime);
-
 	std::vector<Packet *> *departingPackets = new std::vector<Packet *>();
+
+	double simulatedTime = std::min(observers->at(N_O)->observeTime, packets->at(N_A)->arrivalTime);
 	showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
 
 	while (true) {
@@ -135,13 +127,25 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 			if ((K == 0) || (queued < K)) {
 				++queued;
-				departingPackets->push_back(packets->at(N_A));
-				showEachTimeStamp && printf("Added Departure: %f\n", departingPackets->at(N_D)->departureTime);
-			} else {
-				showEachTimeStamp && printf("-----Dropped packet\n");
 
+				/**
+				 * Add a departure event.
+				 * Departure time depends on whether any other packets are in the queue.
+				 */
+				if (departingPackets->size() > N_D) {
+					packets->at(N_A)->departureTime = departingPackets->back()->departureTime + packets->at(N_A)->serviceTime;
+				} else {
+					packets->at(N_A)->departureTime = packets->at(N_A)->arrivalTime + packets->at(N_A)->serviceTime;
+				}
+
+				departingPackets->push_back(packets->at(N_A));
+
+				showEachTimeStamp && printf("Added Departure: %f\n", packets->at(N_D)->departureTime);
+			} else {
 				++dropped;
 				packets->at(N_A)->dropped = true;
+
+				showEachTimeStamp && printf("-----Dropped packet\n");
 			}
 
 			++N_A;
