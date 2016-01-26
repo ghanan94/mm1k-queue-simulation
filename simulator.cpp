@@ -41,7 +41,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
 	if (RHO != 0.0) {
 		LAMDA = std::round(RHO * C / L);
 	} else {
-		RHO = LAMDA * L / C;
+		RHO = (double) LAMDA * L / C;
 	}
 
 	srand(time(NULL));
