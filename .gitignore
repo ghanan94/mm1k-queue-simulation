@@ -1,6 +1,7 @@
 obj/*
 
 lab1
+test_exponentialrv
 
 !.keep
 !.gitignore
