@@ -10,12 +10,13 @@ int main(int argc, char *argv[]) {
 	int L = 12000;
 	int ALPHA = 5;
 	int C = 1000000;
+	double RHO = 0.0;
 	bool showEachTimeStamp = false;
 
 	int c;
 
 
-	while ((c = getopt (argc, argv, "shA:C:K:L:T:Z:")) != -1) {
+	while ((c = getopt (argc, argv, "shA:C:K:L:R:T:Z:")) != -1) {
 		switch (c) {
 			case 'A':
 				ALPHA = std::stoi(optarg);
@@ -28,6 +29,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'L':
 				L = std::stoi(optarg);
+				break;
+			case 'R':
+				RHO = std::stod(optarg);;
 				break;
 			case 'T':
 				T = std::stoi(optarg);
@@ -55,7 +59,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	simulator(showEachTimeStamp, T, K, LAMDA, L, ALPHA, C);
+	simulator(showEachTimeStamp, T, K, LAMDA, L, ALPHA, C, RHO);
 
 	exit(EXIT_SUCCESS);
 }

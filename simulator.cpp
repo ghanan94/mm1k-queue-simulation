@@ -33,7 +33,13 @@ struct Observer {
 	double observeTime;
 };
 
-void simulator(const bool showEachTimeStamp, const int T, const int K, const int LAMDA, const int L, const int ALPHA, const int C) {
+void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA, const int L, const int ALPHA, const int C, double RHO) {
+	if (RHO != 0.0) {
+		LAMDA = std::round(RHO * C / L);
+	} else {
+		RHO = LAMDA * L / C;
+	}
+
 	srand(time(NULL));
 	printf("Queue Simulator\n");
 	printf("---------------\n");
@@ -43,7 +49,8 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	printf("  %-9s %d\n", "LAMDA:", LAMDA);
 	printf("  %-9s %d\n", "L:", L);
 	printf("  %-9s %d\n", "ALPHA:", ALPHA);
-	printf("  %-9s %d\n\n", "C:", C);
+	printf("  %-9s %d\n", "C:", C);
+	printf("  %-9s %f\n\n", "RHO:", RHO);
 
 	std::queue<Observer *> *observers = new std::queue<Observer *>();
 	std::queue<Packet *> *packets = new std::queue<Packet *>();
@@ -141,9 +148,10 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 				showEachTimeStamp && printf("-----Added Departure @ %f\n", packets->front()->departureTime);
 			} else {
+				++dropped;
+
 				// Free arrival packet from memory only if it is
 				// being dropped (not needed in departure event)
-				++dropped;
 				delete packets->front();
 
 				showEachTimeStamp && printf("-----Dropped packet\n");
