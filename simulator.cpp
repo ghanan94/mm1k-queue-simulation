@@ -33,6 +33,10 @@ struct Observer {
 	double observeTime;
 };
 
+double exponentialRV(const double random, const double lamda) {
+	return std::log(1.0 - random)/(-1.0 * lamda);
+}
+
 void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA, const int L, const int ALPHA, const int C, double RHO) {
 	if (RHO != 0.0) {
 		LAMDA = std::round(RHO * C / L);
@@ -56,16 +60,12 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
 	std::queue<Packet *> *packets = new std::queue<Packet *>();
 	std::queue<Packet *> *departingPackets = new std::queue<Packet *>();
 
-	std::random_device rd;
-    std::mt19937 gen(rd());
-    std::exponential_distribution<> observerExponentialDistribution(ALPHA);
-
     /**
      * Generate a set of random observation times
      * according to a poisson distribution with parameter
      * α (ALPHA).
      */
-	for (double t = observerExponentialDistribution(gen); t < ((double) T); t += observerExponentialDistribution(gen)) {
+	for (double t = exponentialRV(((double) rand() / (RAND_MAX)), ALPHA); t < ((double) T); t += exponentialRV(((double) rand() / (RAND_MAX)), ALPHA)) {
 		Observer *newObserver = new Observer;
 
 		newObserver->observeTime = t;
@@ -81,13 +81,12 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
      * Departure time depends on how much system needs to
      * wait and its service time of [L/C] (C is the link rate).
      */
-    std::exponential_distribution<> packetArrivalExponentialDistribution(LAMDA);
-    std::exponential_distribution<> packetLengthExponentialDistrubution(1.0 / ((double) L));
+    double packetLengthLamda = 1.0 / ((double) L);
 
-	for (double t = packetArrivalExponentialDistribution(gen); t < ((double) T); t += packetArrivalExponentialDistribution(gen)) {
+	for (double t = exponentialRV(((double) rand() / (RAND_MAX)), LAMDA); t < ((double) T); t += exponentialRV(((double) rand() / (RAND_MAX)), LAMDA)) {
 		Packet *newPacket = new Packet;
 
-		int length = std::round(packetLengthExponentialDistrubution(gen));
+		int length = std::round(exponentialRV(((double) rand() / (RAND_MAX)), packetLengthLamda));
 		double serviceTime = (((double) length) / ((double) C));
 
 		newPacket->arrivalTime = t;
