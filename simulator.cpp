@@ -93,13 +93,13 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	 * N_A 		= Number of packet arrivals so far
 	 * N_D 		= Number of packet departures so far
 	 * N_O 		= Number of observations so far
-	 * queued 	= Number of packets currently in queue
+	 * dropped 	= Number of packets dropped
 	 */
 	int N_A = 0;
 	int N_D = 0;
 	int N_O = 0;
 
-	int queued = 0;
+	int dropped = 0;
 	int idleObservations = 0;
 	int queuedObservations = 0;
 
@@ -114,7 +114,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 				++idleObservations;
 			}
 
-			queuedObservations += queued;
+			queuedObservations += N_A - N_D;
 
 			++N_O;
 			delete observers->front();
@@ -125,9 +125,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 		if (packets->size() && (packets->front()->arrivalTime == simulatedTime)) {
 			showEachTimeStamp && printf("Arrival Event @ %f\n", packets->front()->arrivalTime);
 
-			if ((K == 0) || (queued < K)) {
-				++queued;
-
+			if ((K == 0) || ((N_A - N_D) < K)) {
 				/**
 				 * Add a departure event.
 				 * Departure time depends on whether any other packets are in the queue.
@@ -138,18 +136,19 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 					packets->front()->departureTime = departingPackets->back()->departureTime + packets->front()->serviceTime;
 				}
 
+				++N_A;
 				departingPackets->push(packets->front());
 
 				showEachTimeStamp && printf("-----Added Departure @ %f\n", packets->front()->departureTime);
 			} else {
 				// Free arrival packet from memory only if it is
 				// being dropped (not needed in departure event)
+				++dropped;
 				delete packets->front();
 
 				showEachTimeStamp && printf("-----Dropped packet\n");
 			}
 
-			++N_A;
 			packets->pop();
 		}
 
@@ -157,7 +156,6 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 		if (departingPackets->size() && (departingPackets->front()->departureTime == simulatedTime)) {
 			showEachTimeStamp && printf("Departure Event @ %f\n", departingPackets->front()->departureTime);
 
-			--queued;
 			++N_D;
 			delete departingPackets->front();
 			departingPackets->pop();
@@ -196,7 +194,10 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 	delete packets;
 	delete observers;
 
-	const int dropped = N_A - N_D;
+	departingPackets = NULL;
+	packets = NULL;
+	observers = NULL;
+
 	const double E_N = ((double) queuedObservations) / ((double) N_O);
 	const double E_T = LAMDA * E_N;
 	const double P_IDLE = ((double) idleObservations) / ((double) N_O);
