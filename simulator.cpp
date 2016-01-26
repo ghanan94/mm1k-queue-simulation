@@ -117,6 +117,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 			queuedObservations += queued;
 
 			++N_O;
+			delete observers->front();
 			observers->pop();
 		}
 
@@ -141,6 +142,10 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 				showEachTimeStamp && printf("-----Added Departure @ %f\n", packets->front()->departureTime);
 			} else {
+				// Free arrival packet from memory only if it is
+				// being dropped (not needed in departure event)
+				delete packets->front();
+
 				showEachTimeStamp && printf("-----Dropped packet\n");
 			}
 
@@ -154,6 +159,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 
 			--queued;
 			++N_D;
+			delete departingPackets->front();
 			departingPackets->pop();
 		}
 
@@ -185,6 +191,10 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, const int
 			showEachTimeStamp && printf("Next Simulated Event @ %f\n\n", simulatedTime);
 		}
 	}
+
+	delete departingPackets;
+	delete packets;
+	delete observers;
 
 	const int dropped = N_A - N_D;
 	const double E_N = ((double) queuedObservations) / ((double) N_O);
