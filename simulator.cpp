@@ -37,9 +37,10 @@ double exponentialRV(const double random, const double lamda) {
 	return std::log(1.0 - random)/(-1.0 * lamda);
 }
 
-void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA, const int L, const int ALPHA, const int C, double RHO) {
+void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA, const int L, int ALPHA, const int C, double RHO) {
 	if (RHO != 0.0) {
 		LAMDA = std::round(RHO * C / L);
+		ALPHA = 3 * LAMDA;
 	} else {
 		RHO = (double) LAMDA * L / C;
 	}

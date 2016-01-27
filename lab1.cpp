@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
 	const double RHO_MAX = std::stod(argv[3]);
 	const double RHO_STEP = std::stod(argv[4]);
 
-
 	for (double RHO = RHO_MIN; RHO <= RHO_MAX; RHO += RHO_STEP) {
 		simulator(showEachTimeStamp, T, K, LAMDA, L, ALPHA, C, RHO);
 	}
