@@ -109,6 +109,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
 	int dropped = 0;
 	int idleObservations = 0;
 	int queuedObservations = 0;
+	int queueFullObservations = 0;
 
 	double simulatedTime = std::min(observers->front()->observeTime, packets->front()->arrivalTime);
 
@@ -119,6 +120,10 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
 
 			if (departingPackets->empty()) {
 				++idleObservations;
+			}
+
+			if ((K != 0) && ((N_A - N_D) == K)) {
+				queueFullObservations += 1;
 			}
 
 			queuedObservations += N_A - N_D;
@@ -209,7 +214,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
 	const double E_N = ((double) queuedObservations) / ((double) N_O);
 	const double E_T = LAMDA * E_N;
 	const double P_IDLE = ((double) idleObservations) / ((double) N_O);
-	const double P_LOSS = ((double) dropped) / ((double) N_A);
+	const double P_LOSS = ((double) queueFullObservations) / ((double) N_O);
 
 	printf("%-20s %d\n", "Arrived Packets:", N_A);
 	printf("%-20s %d\n", "Departed Packets:", N_D);
