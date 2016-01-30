@@ -1,4 +1,4 @@
-CC = g++
+CC = g++ -std=c++11
 CFLAGS = -g -Wall
 OBJECT_DIR = obj
 
@@ -15,7 +15,7 @@ LAB1_DEBUG_OBJECTS = $(OBJECT_DIR)/lab1_debug.o $(OBJECT_DIR)/simulator.o
 TEXT_EXPONENTIALRV_OBJECTS = $(OBJECT_DIR)/test_exponentialrv.o
 
 $(OBJECT_DIR)/test_exponentialrv.o: test_exponentialrv.c
-	gcc -g -Wall -c $< -o $@
+	gcc -g -Wall -lm -c $< -o $@
 
 $(OBJECT_DIR)/%.o: %.cpp $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -29,7 +29,7 @@ lab1_debug: $(LAB1_DEBUG_OBJECTS)
 	$(CC) $(CFLAGS) $(LAB1_DEBUG_OBJECTS) -o $@
 
 test_exponentialrv: $(TEXT_EXPONENTIALRV_OBJECTS)
-	gcc -g -Wall $(TEXT_EXPONENTIALRV_OBJECTS) -o $@
+	gcc -g -Wall -lm $(TEXT_EXPONENTIALRV_OBJECTS) -o $@
 
 clean:
 	-rm -f $(OBJECT_DIR)/*.o

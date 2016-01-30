@@ -30,8 +30,9 @@ int main(int argc, char *argv[]) {
 
 	double *values = (double *)malloc(NUMBERS_GENERATED * sizeof(double));
 	double sum = 0.0;
+	int i;
 
-	for (int i = 0; i < NUMBERS_GENERATED; i++) {
+	for (i = 0; i < NUMBERS_GENERATED; i++) {
 		double rv = exponentialRV(((double) rand() / (RAND_MAX)), LAMDA);
 		values[i] = rv;
 		sum += rv;
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]) {
 	double actualMean = sum / NUMBERS_GENERATED;
 	double variance = 0.0;
 
-	for (int i = 0; i < NUMBERS_GENERATED; i++) {
+	for (i = 0; i < NUMBERS_GENERATED; i++) {
 		variance +=  pow((values[i] - actualMean), 2);
 	}
 
