@@ -212,7 +212,7 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
 	observers = NULL;
 
 	const double E_N = ((double) queuedObservations) / ((double) N_O);
-	const double E_T = LAMDA * E_N;
+	const double E_T = ((double) E_N) / LAMDA;
 	const double P_IDLE = ((double) idleObservations) / ((double) N_O);
 	const double P_LOSS = ((double) queueFullObservations) / ((double) N_O);
 
