@@ -5,12 +5,12 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	int T = 10000;
-	int K = 0;
-	int LAMDA = 5;
-	int L = 12000;
-	int ALPHA = 5;
-	int C = 1000000;
+	unsigned int T = 10000;
+	unsigned int K = 0;
+	unsigned int LAMDA = 5;
+	unsigned int L = 12000;
+	unsigned int ALPHA = 5;
+	unsigned int C = 1000000;
 	double RHO = 0.0;
 	bool showEachTimeStamp = false;
 
@@ -20,25 +20,25 @@ int main(int argc, char *argv[]) {
 	while ((c = getopt (argc, argv, "shA:C:K:L:R:T:Z:")) != -1) {
 		switch (c) {
 			case 'A':
-				ALPHA = std::stoi(optarg);
+				ALPHA = (unsigned int)std::stoi(optarg);
 				break;
 			case 'C':
-				C = std::stoi(optarg);
+				C = (unsigned int)std::stoi(optarg);
 				break;
 			case 'K':
-				K = std::stoi(optarg);
+				K = (unsigned int)std::stoi(optarg);
 				break;
 			case 'L':
-				L = std::stoi(optarg);
+				L = (unsigned int)std::stoi(optarg);
 				break;
 			case 'R':
 				RHO = std::stod(optarg);;
 				break;
 			case 'T':
-				T = std::stoi(optarg);
+				T = (unsigned int)std::stoi(optarg);
 				break;
 			case 'Z':
-				LAMDA = std::stoi(optarg);
+				LAMDA = (unsigned int)std::stoi(optarg);
 				break;
 			case 's':
 				showEachTimeStamp = true;

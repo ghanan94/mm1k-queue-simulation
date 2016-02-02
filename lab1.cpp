@@ -9,12 +9,12 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	const int T = 10000;
-	const int K = std::stoi(argv[1]);
-	const int LAMDA = 5;
-	const int L = 12000;
-	const int ALPHA = 5;
-	const int C = 1000000;
+	const unsigned int T = 10000;
+	const unsigned int K = std::stoi(argv[1]);
+	const unsigned int LAMDA = 5;
+	const unsigned int L = 12000;
+	const unsigned int ALPHA = 5;
+	const unsigned int C = 1000000;
 	const bool showEachTimeStamp = false;
 
 	const double RHO_MIN = std::stod(argv[2]);

@@ -1,6 +1,6 @@
 #ifndef _SIMULATOR_H_
 #define _SIMULATOR_H_
 
-void simulator(bool, int, int, int, int, int, int, double);
+void simulator(bool, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, double);
 
 #endif

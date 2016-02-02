@@ -37,9 +37,9 @@ double exponentialRV(const double random, const double lamda) {
 	return std::log(1.0 - random)/(-1.0 * lamda);
 }
 
-void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA, const int L, int ALPHA, const int C, double RHO) {
+void simulator(const bool showEachTimeStamp, const unsigned int T, const unsigned int K, unsigned int LAMDA, const unsigned int L, unsigned int ALPHA, const unsigned int C, double RHO) {
 	if (RHO != 0.0) {
-		LAMDA = std::round(RHO * C / L);
+		LAMDA = (unsigned int)std::round(RHO * C / L);
 		ALPHA = 3 * LAMDA;
 	} else {
 		RHO = (double) LAMDA * L / C;
@@ -102,14 +102,14 @@ void simulator(const bool showEachTimeStamp, const int T, const int K, int LAMDA
 	 * N_O 		= Number of observations so far
 	 * dropped 	= Number of packets dropped
 	 */
-	int N_A = 0;
-	int N_D = 0;
-	int N_O = 0;
+	unsigned int N_A = 0;
+	unsigned int N_D = 0;
+	unsigned int N_O = 0;
 
-	int dropped = 0;
-	int idleObservations = 0;
-	int queuedObservations = 0;
-	int queueFullObservations = 0;
+	unsigned int dropped = 0;
+	unsigned int idleObservations = 0;
+	unsigned int queuedObservations = 0;
+	unsigned int queueFullObservations = 0;
 
 	double simulatedTime = std::min(observers->front()->observeTime, packets->front()->arrivalTime);
 
